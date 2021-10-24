@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"jwt-go/internal/server"
+)
 
-func main(){
-	fmt.Println("Hello World")
+func main() {
+	server.Run() // Run server
+	// 6d7078767a144e609be234341212310
 }
