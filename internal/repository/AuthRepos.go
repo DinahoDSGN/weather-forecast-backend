@@ -15,11 +15,8 @@ func NewAuthRepo(db *gorm.DB) *AuthRepo {
 
 func (database *AuthRepo) SignUp(data models.User) (models.User, error) {
 	user := models.User{
-		Username:  data.Username,
-		Password:  data.Password,
-		Firstname: data.Firstname,
-		Lastname:  data.Lastname,
-		Age:       data.Age,
+		Username: data.Username,
+		Password: data.Password,
 	}
 
 	database.db.Create(&user)

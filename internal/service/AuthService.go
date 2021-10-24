@@ -7,11 +7,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"jwt-go/internal/models"
 	"jwt-go/internal/repository"
+	"jwt-go/util"
+	"log"
 	"time"
 )
-
-const salt = "jglkdabgfa987r89sahdnlkn"
-const signingKey = "gpldmzlkfgh87809"
 
 type AuthService struct {
 	repo repository.Auth
@@ -32,6 +31,11 @@ type TokenClaims struct {
 }
 
 func (s *AuthService) GenerateToken(username, password string) (string, error) {
+	config, err := util.LoadConfig(".") // initialize config
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
 	data, err := s.repo.GetUser(username, generatePasswordHash(password))
 	if data.Id == 0 {
 		return "Invalid username or password", err
@@ -45,17 +49,22 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 		data.Id,
 	})
 
-	return token.SignedString([]byte(signingKey))
+	return token.SignedString([]byte(config.SIGNING_KEY))
 }
 
 func (s *AuthService) ParseToken(accessToken string) (uint, error) {
+	config, err := util.LoadConfig(".") // initialize config
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
 	token, err := jwt.ParseWithClaims(accessToken, &TokenClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("invalid signing method")
 			}
 
-			return []byte(signingKey), nil
+			return []byte(config.SIGNING_KEY), nil
 		})
 	if err != nil {
 		return 0, nil
@@ -70,8 +79,13 @@ func (s *AuthService) ParseToken(accessToken string) (uint, error) {
 }
 
 func generatePasswordHash(password string) string {
+	config, err := util.LoadConfig(".") // initialize config
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
 	hash := sha1.New()
 	hash.Write([]byte(password))
 
-	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+	return fmt.Sprintf("%x", hash.Sum([]byte(config.SALT)))
 }

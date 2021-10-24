@@ -2,9 +2,15 @@ package main
 
 import (
 	"jwt-go/internal/server"
+	"jwt-go/util"
+	"log"
 )
 
 func main() {
-	server.Run() // Run server
-	// 6d7078767a144e609be234341212310
+	config, err := util.LoadConfig(".") // initialize config
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
+	server.Run(config) // Run server
 }

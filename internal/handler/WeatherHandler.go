@@ -4,20 +4,24 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"jwt-go/util"
+	"log"
 	"net/http"
 )
 
-const URL = "https://api.weatherapi.com/v1/"
-const API_KEY = "6d7078767a144e609be234341212310"
-
 func (handler *Handler) Weather(c *gin.Context) {
+	config, err := util.LoadConfig(".") // initialize config
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
 	id, _ := getUserId(c)
 	data, _ := handler.services.User.GetList(id)
 	if data.Location.City == "" {
 		Send(c, http.StatusInternalServerError, "Your location is unknown")
 	}
 
-	resp, err := http.Get(URL + "current.json?key=" + API_KEY + "&q=" + data.Location.City)
+	resp, err := http.Get(config.URL + "current.json?key=" + config.API_KEY + "&q=" + data.Location.City)
 	if err != nil {
 		Send(c, http.StatusBadRequest, err.Error())
 		return
@@ -40,6 +44,11 @@ func (handler *Handler) Weather(c *gin.Context) {
 }
 
 func (handler *Handler) Week(c *gin.Context) {
+	config, err := util.LoadConfig(".") // initialize config
+	if err != nil {
+		log.Fatal("Cannot load config: ", err)
+	}
+
 	id, _ := getUserId(c)
 	data, _ := handler.services.User.GetList(id)
 
@@ -47,7 +56,7 @@ func (handler *Handler) Week(c *gin.Context) {
 		Send(c, http.StatusInternalServerError, "Your location is unknown")
 	}
 
-	resp, err := http.Get(URL + "forecast.json?key=" + API_KEY + "&q=" + data.Location.City + "&days=7")
+	resp, err := http.Get(config.URL + "forecast.json?key=" + config.API_KEY + "&q=" + data.Location.City + "&days=7")
 	if err != nil {
 		Send(c, http.StatusBadRequest, err.Error())
 		return

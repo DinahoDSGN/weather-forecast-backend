@@ -6,20 +6,16 @@ import (
 )
 
 func Migrate(db *gorm.DB) error {
-
-	db.Migrator().DropTable("messages")
-	db.Migrator().DropTable("chats")
-	db.AutoMigrate(&models.User{}, &models.Location{})
+	db.AutoMigrate(&models.User{}, &models.Location{}, &models.Weather{})
 
 	return nil
 }
 
 func Drop(db *gorm.DB) error {
 
-	err := db.Migrator().DropTable("users")
-	if err != nil {
-		return err
-	}
+	db.Migrator().DropTable("users")
+	db.Migrator().DropTable("locations")
+	db.Migrator().DropTable("weathers")
 
 	return nil
 }
